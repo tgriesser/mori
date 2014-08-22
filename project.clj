@@ -3,6 +3,7 @@
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2322"]]
+                 [com.cognitect/transit-cljs "0.8.182"]]
 
   :plugins [[lein-cljsbuild "1.0.4-SNAPSHOT"]]
 
@@ -11,7 +12,7 @@
     [{:source-paths ["src"],
       :id "dev",
       :compiler
-      {:output-to "mori.dev.js",
+      {:output-to "mori.bare.js",
        :optimizations :simple
        :output-wrapper false
        :pretty-print true}}
