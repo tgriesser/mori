@@ -24,4 +24,6 @@ echo "Finalizing mori.js"
 
 echo "Deleting mori.bare.js"
 
+rm mori.bare.js
+
 echo "Build finished."
