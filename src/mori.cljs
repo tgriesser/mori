@@ -8,7 +8,7 @@
     interpose interleave concat flatten
     keys select-keys vals
     prim-seq lazy-seq keep keep-indexed
-    map mapcat map-indexed reduce reduce-kv filter remove some every? equiv
+    map mapcat map-indexed reduce reduce-kv filter remove some every? equiv mapv filterv
     transduce iteration sequence flatmap dedupe
     range repeat repeatedly sort sort-by
     into-array
@@ -95,6 +95,8 @@
 (def ^:export mapcat cljs.core/mapcat)
 (def ^:export reduce cljs.core/reduce)
 (def ^:export reduce-kv cljs.core/reduce-kv)
+(def ^:export mapv cljs.core/mapv)
+(def ^:export filterv cljs.core/filterv)
 (def ^:export keep cljs.core/keep)
 (def ^:export keep-indexed cljs.core/keep-indexed)
 (def ^:export filter cljs.core/filter)
@@ -313,8 +315,8 @@
 (defn extend-to-iindexed [obj methods]
   (specify! obj
     IIndexed
-    (-nth [this k] (.call (aget methods "nth") this))
-    (-nth [this k not-found] (.call (aget methods "nth") this))))
+    (-nth [this k] (.call (aget methods "nth") this k))
+    (-nth [this k not-found] (.call (aget methods "nth") this k not-found))))
 
 (defn extend-to-ikvreduce [obj methods]
   (specify! obj
@@ -324,7 +326,7 @@
 (defn extend-to-ilookup [obj methods]
   (specify! obj
     ILookup
-    (-lookup [this k] (-lookup this k nil))
+    (-lookup [this k] (.call (aget methods "lookup") this k))
     (-lookup [this k not-found] (.call (aget methods "lookup") this k not-found))))
 
 (defn extend-to-imap [obj methods]
