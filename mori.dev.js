@@ -18823,19 +18823,19 @@ com.cognitect.transit.types.TransitArrayMap.prototype.forEach = function(a) {
   }
 };
 com.cognitect.transit.types.TransitArrayMap.prototype.forEach = com.cognitect.transit.types.TransitArrayMap.prototype.forEach;
-com.cognitect.transit.types.TransitArrayMap.prototype.get = function(a) {
+com.cognitect.transit.types.TransitArrayMap.prototype.get = function(a, b) {
   if (this.backingMap) {
     return this.backingMap.get(a);
   }
   if (this.convert()) {
     return this.get(a);
   }
-  for (var b = 0;b < this._entries.length;b += 2) {
-    if (com.cognitect.transit.eq.equals(this._entries[b], a)) {
-      return this._entries[b + 1];
+  for (var c = 0;c < this._entries.length;c += 2) {
+    if (com.cognitect.transit.eq.equals(this._entries[c], a)) {
+      return this._entries[c + 1];
     }
   }
-  return null;
+  return b;
 };
 com.cognitect.transit.types.TransitArrayMap.prototype.get = com.cognitect.transit.types.TransitArrayMap.prototype.get;
 com.cognitect.transit.types.TransitArrayMap.prototype.has = function(a) {
@@ -18938,16 +18938,16 @@ com.cognitect.transit.types.TransitMap.prototype.forEach = function(a) {
   }
 };
 com.cognitect.transit.types.TransitMap.prototype.forEach = com.cognitect.transit.types.TransitMap.prototype.forEach;
-com.cognitect.transit.types.TransitMap.prototype.get = function(a) {
-  var b = com.cognitect.transit.eq.hashCode(a), b = this.map[b];
-  if (null != b) {
-    for (var c = 0;c < b.length;c += 2) {
-      if (com.cognitect.transit.eq.equals(a, b[c])) {
-        return b[c + 1];
+com.cognitect.transit.types.TransitMap.prototype.get = function(a, b) {
+  var c = com.cognitect.transit.eq.hashCode(a), c = this.map[c];
+  if (null != c) {
+    for (var d = 0;d < c.length;d += 2) {
+      if (com.cognitect.transit.eq.equals(a, c[d])) {
+        return c[d + 1];
       }
     }
   } else {
-    return null;
+    return b;
   }
 };
 com.cognitect.transit.types.TransitMap.prototype.get = com.cognitect.transit.types.TransitMap.prototype.get;
@@ -19150,6 +19150,18 @@ com.cognitect.transit.types.link = function(a) {
 com.cognitect.transit.types.isLink = function(a) {
   return a instanceof com.cognitect.transit.types.TaggedValue && "link" === a.tag;
 };
+com.cognitect.transit.types.specialDouble = function(a) {
+  switch(a) {
+    case "-INF":
+      return-Infinity;
+    case "INF":
+      return Infinity;
+    case "NaN":
+      return NaN;
+    default:
+      throw Error("Invalid special double value " + a);;
+  }
+};
 com.cognitect.transit.impl = {};
 com.cognitect.transit.impl.decoder = {};
 com.cognitect.transit.impl.decoder.Tag = function(a) {
@@ -19223,6 +19235,8 @@ com.cognitect.transit.impl.decoder.Decoder.prototype.defaults = {handlers:{_:fun
   return com.cognitect.transit.types.symbol(a);
 }, r:function(a) {
   return com.cognitect.transit.types.uri(a);
+}, z:function(a) {
+  return com.cognitect.transit.types.specialDouble(a);
 }, "'":function(a) {
   return a;
 }, m:function(a) {
@@ -19621,7 +19635,8 @@ com.cognitect.transit.handlers.Handlers = function() {
   com.cognitect.transit.handlers.defaultHandlers(this);
 };
 com.cognitect.transit.handlers.Handlers.prototype.get = function(a) {
-  return "string" === typeof a ? this.handlers[a] : this.handlers[com.cognitect.transit.handlers.typeTag(a)];
+  var b = null, b = "string" === typeof a ? this.handlers[a] : this.handlers[com.cognitect.transit.handlers.typeTag(a)];
+  return null != b ? b : this.handlers["default"];
 };
 com.cognitect.transit.handlers.validTag = function(a) {
   switch(a) {
@@ -19688,7 +19703,7 @@ com.cognitect.transit.impl.writer.JSONMarshaller.prototype.emitBoolean = functio
   return b ? this.emitString(com.cognitect.transit.delimiters.ESC, "?", a.toString()[0], b, c) : a;
 };
 com.cognitect.transit.impl.writer.JSONMarshaller.prototype.emitInteger = function(a, b, c) {
-  return b || "string" === typeof a || a instanceof goog.math.Long ? this.emitString(com.cognitect.transit.delimiters.ESC, "i", a.toString(), b, c) : a;
+  return Infinity === a ? this.emitString(com.cognitect.transit.delimiters.ESC, "z", "INF", b, c) : -Infinity === a ? this.emitString(com.cognitect.transit.delimiters.ESC, "z", "-INF", b, c) : isNaN(a) ? this.emitString(com.cognitect.transit.delimiters.ESC, "z", "NaN", b, c) : b || "string" === typeof a || a instanceof goog.math.Long ? this.emitString(com.cognitect.transit.delimiters.ESC, "i", a.toString(), b, c) : a;
 };
 com.cognitect.transit.impl.writer.JSONMarshaller.prototype.emitDouble = function(a, b, c) {
   return b ? this.emitString(a.ESC, "d", a, b, c) : a;
@@ -20009,13 +20024,17 @@ bigDec:com.cognitect.transit.types.bigDecimalValue, isBigDec:com.cognitect.trans
 set:com.cognitect.transit.types.set, isSet:com.cognitect.transit.types.isSet, list:com.cognitect.transit.types.list, isList:com.cognitect.transit.types.isList, quoted:com.cognitect.transit.types.quoted, isQuoted:com.cognitect.transit.types.isQuoted, tagged:com.cognitect.transit.types.taggedValue, isTaggedValue:com.cognitect.transit.types.isTaggedValue, link:com.cognitect.transit.types.link, isLink:com.cognitect.transit.types.isLink, hash:com.cognitect.transit.eq.hashCode, hashArrayLike:com.cognitect.transit.eq.hashArrayLike, 
 hashMapLike:com.cognitect.transit.eq.hashMapLike, equals:com.cognitect.transit.eq.equals, extendToEQ:com.cognitect.transit.eq.extendToEQ, mapToObject:com.cognitect.transit.mapToObject, decoder:com.cognitect.transit.impl.decoder.decoder, UUIDfromString:com.cognitect.transit.types.UUIDfromString, randomUUID:com.cognitect.transit.types.randomUUID, stringableKeys:com.cognitect.transit.impl.writer.stringableKeys});
 var cognitect = {transit:{}};
+cljs.core.UUID.prototype.cljs$core$IEquiv$ = !0;
+cljs.core.UUID.prototype.cljs$core$IEquiv$_equiv$arity$2 = function(a, b) {
+  return b instanceof cljs.core.UUID ? this.uuid === b.uuid : b instanceof com.cognitect.transit.types.UUID ? this.uuid === b.toString() : !1;
+};
 com.cognitect.transit.types.TaggedValue.prototype.cljs$core$IEquiv$ = !0;
 com.cognitect.transit.types.TaggedValue.prototype.cljs$core$IEquiv$_equiv$arity$2 = function(a, b) {
   return this.equiv(b);
 };
 com.cognitect.transit.types.UUID.prototype.cljs$core$IEquiv$ = !0;
 com.cognitect.transit.types.UUID.prototype.cljs$core$IEquiv$_equiv$arity$2 = function(a, b) {
-  return this.equiv(b);
+  return b instanceof cljs.core.UUID ? cljs.core._equiv.call(null, b, this) : this.equiv(b);
 };
 goog.math.Long.prototype.cljs$core$IEquiv$ = !0;
 goog.math.Long.prototype.cljs$core$IEquiv$_equiv$arity$2 = function(a, b) {
@@ -20289,20 +20308,39 @@ cognitect.transit.VectorHandler.prototype.stringRep = function(a) {
 cognitect.transit.__GT_VectorHandler = function() {
   return new cognitect.transit.VectorHandler;
 };
+cognitect.transit.UUIDHandler = function() {
+};
+cognitect.transit.UUIDHandler.cljs$lang$type = !0;
+cognitect.transit.UUIDHandler.cljs$lang$ctorStr = "cognitect.transit/UUIDHandler";
+cognitect.transit.UUIDHandler.cljs$lang$ctorPrWriter = function(a, b, c) {
+  return cljs.core._write.call(null, b, "cognitect.transit/UUIDHandler");
+};
+cognitect.transit.UUIDHandler.prototype.tag = function(a) {
+  return "u";
+};
+cognitect.transit.UUIDHandler.prototype.rep = function(a) {
+  return a.uuid;
+};
+cognitect.transit.UUIDHandler.prototype.stringRep = function(a) {
+  return this.rep(a);
+};
+cognitect.transit.__GT_UUIDHandler = function() {
+  return new cognitect.transit.UUIDHandler;
+};
 cognitect.transit.writer = function() {
   var a = null, b = function(b) {
     return a.call(null, b, null);
   }, c = function(a, b) {
-    var c = new cognitect.transit.KeywordHandler, g = new cognitect.transit.SymbolHandler, h = new cognitect.transit.ListHandler, k = new cognitect.transit.MapHandler, l = new cognitect.transit.SetHandler, m = new cognitect.transit.VectorHandler, n = cljs.core.merge.call(null, cljs.core.PersistentHashMap.fromArrays([cljs.core.PersistentHashMap, cljs.core.Cons, cljs.core.PersistentArrayMap, cljs.core.NodeSeq, cljs.core.PersistentQueue, cljs.core.IndexedSeq, cljs.core.Keyword, cljs.core.EmptyList, 
-    cljs.core.LazySeq, cljs.core.Subvec, cljs.core.PersistentQueueSeq, cljs.core.ArrayNodeSeq, cljs.core.ValSeq, cljs.core.PersistentArrayMapSeq, cljs.core.PersistentVector, cljs.core.List, cljs.core.RSeq, cljs.core.PersistentHashSet, cljs.core.PersistentTreeMap, cljs.core.KeySeq, cljs.core.ChunkedSeq, cljs.core.PersistentTreeSet, cljs.core.ChunkedCons, cljs.core.Symbol, cljs.core.Range, cljs.core.PersistentTreeMapSeq], [k, h, k, h, h, h, c, h, h, m, h, h, h, h, m, h, h, l, k, h, h, l, h, g, h, h]), 
-    (new cljs.core.Keyword(null, "handlers", "handlers", 79528781)).cljs$core$IFn$_invoke$arity$1(b));
-    return com.cognitect.transit.writer.call(null, cljs.core.name.call(null, a), cognitect.transit.opts_merge.call(null, {unpack:function(a, b, c, d, e, f, g) {
+    var c = new cognitect.transit.KeywordHandler, g = new cognitect.transit.SymbolHandler, h = new cognitect.transit.ListHandler, k = new cognitect.transit.MapHandler, l = new cognitect.transit.SetHandler, m = new cognitect.transit.VectorHandler, n = new cognitect.transit.UUIDHandler, p = cljs.core.merge.call(null, cljs.core.PersistentHashMap.fromArrays([cljs.core.PersistentHashMap, cljs.core.Cons, cljs.core.PersistentArrayMap, cljs.core.NodeSeq, cljs.core.PersistentQueue, cljs.core.IndexedSeq, cljs.core.Keyword, 
+    cljs.core.EmptyList, cljs.core.LazySeq, cljs.core.Subvec, cljs.core.PersistentQueueSeq, cljs.core.ArrayNodeSeq, cljs.core.ValSeq, cljs.core.PersistentArrayMapSeq, cljs.core.PersistentVector, cljs.core.List, cljs.core.RSeq, cljs.core.PersistentHashSet, cljs.core.PersistentTreeMap, cljs.core.KeySeq, cljs.core.ChunkedSeq, cljs.core.PersistentTreeSet, cljs.core.ChunkedCons, cljs.core.Symbol, cljs.core.UUID, cljs.core.Range, cljs.core.PersistentTreeMapSeq], [k, h, k, h, h, h, c, h, h, m, h, h, h, 
+    h, m, h, h, l, k, h, h, l, h, g, n, h, h]), (new cljs.core.Keyword(null, "handlers", "handlers", 79528781)).cljs$core$IFn$_invoke$arity$1(b));
+    return com.cognitect.transit.writer.call(null, cljs.core.name.call(null, a), cognitect.transit.opts_merge.call(null, {unpack:function(a, b, c, d, e, f, g, h) {
       return function(a) {
         return a instanceof cljs.core.PersistentArrayMap ? a.arr : !1;
       };
-    }(c, g, h, k, l, m, n), handlers:function() {
-      var a = cljs.core.clone.call(null, n);
-      a.forEach = function(a, b, c, d, e, f, g, h) {
+    }(c, g, h, k, l, m, n, p), handlers:function() {
+      var a = cljs.core.clone.call(null, p);
+      a.forEach = function(a, b, c, d, e, f, g, h, k) {
         return function(a) {
           for (var b = cljs.core.seq.call(null, this), c = null, d = 0, e = 0;;) {
             if (e < d) {
@@ -20318,18 +20356,18 @@ cognitect.transit.writer = function() {
             }
           }
         };
-      }(a, c, g, h, k, l, m, n);
+      }(a, c, g, h, k, l, m, n, p);
       return a;
-    }(), objectBuilder:function(a, b, c, d, e, f, g) {
-      return function(h, k, l) {
-        return cljs.core.reduce_kv.call(null, function(a, b, c, d, e, f, g) {
+    }(), objectBuilder:function(a, b, c, d, e, f, g, h) {
+      return function(k, l, m) {
+        return cljs.core.reduce_kv.call(null, function(a, b, c, d, e, f, g, h) {
           return function(a, b, c) {
-            a.push(k.call(null, b), l.call(null, c));
+            a.push(l.call(null, b), m.call(null, c));
             return a;
           };
-        }(a, b, c, d, e, f, g), ["^ "], h);
+        }(a, b, c, d, e, f, g, h), ["^ "], k);
       };
-    }(c, g, h, k, l, m, n)}, cljs.core.clj__GT_js.call(null, cljs.core.dissoc.call(null, b, new cljs.core.Keyword(null, "handlers", "handlers", 79528781)))));
+    }(c, g, h, k, l, m, n, p)}, cljs.core.clj__GT_js.call(null, cljs.core.dissoc.call(null, b, new cljs.core.Keyword(null, "handlers", "handlers", 79528781)))));
   }, a = function(a, e) {
     switch(arguments.length) {
       case 1:
